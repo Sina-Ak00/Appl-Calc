@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import moment from "moment-jalaali";
 import "moment/locale/fa";
 
@@ -14,11 +14,12 @@ function App() {
     code: "OR0000907105A",
     startDate: "",
     endDate: "",
-    price: "",
+    price: "299000",
   });
   const [days, setDays] = useState<number | null>(null);
+  const [tooltip, setTooltip] = useState<String | null>(null);
   const [result, setResult] = useState<number | null>(null);
-
+  const subTime = 60;
   // Load cached data
   useEffect(() => {
     const cached = localStorage.getItem("jalaliCalcData");
@@ -39,13 +40,28 @@ function App() {
 
     const start = moment(form.startDate, "jYYYY-jMM-jDD");
     const end = moment(form.endDate, "jYYYY-jMM-jDD");
-    const diffDays = end.diff(start, "days");
+    const diffDays = subTime - (end.diff(start, "days") + 1);
     setDays(diffDays);
     const res = (Number(form.price) / 60) * diffDays;
-    setResult(Number(res.toFixed(2)));
+    const rounded = Math.ceil(res / 1000) * 1000;
+    setResult(rounded);
   };
 
-  const formattedCode = form.code ? `${form.code.replace('OR0000','LM')}` : "";
+  const formattedCode = form.code ? `${form.code.replace("OR0000", "LM")}` : "";
+
+  //tooltip
+  useEffect(() => {
+    // If the tooltip is shown
+    if (tooltip) {
+      // Set a timer to hide it after 2 seconds (2000ms)
+      const timer = setTimeout(() => {
+        setTooltip(false);
+      }, 2000);
+
+      // Clean up the timer if the component unmounts or 'tooltip' changes again
+      return () => clearTimeout(timer);
+    }
+  }, [tooltip]);
 
   return (
     <div className="min-h-screen bg-[#0a0a0b] flex items-center justify-center p-6 text-zinc-100">
@@ -71,19 +87,6 @@ function App() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm mb-1 text-zinc-300 text-right">
-              تاریخ پایان سرویس
-            </label>
-            <input
-              type="text"
-              placeholder="1403-07-10"
-              value={form.endDate}
-              onChange={(e) => handleChange("endDate", e.target.value)}
-              className="w-full p-2 rounded-lg bg-[#1f1f23] border border-[#333] text-zinc-100 text-center placeholder-zinc-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm mb-1 text-zinc-300 text-right">
               تاریخ تحویل
             </label>
             <input
@@ -91,6 +94,18 @@ function App() {
               placeholder="1403-07-01"
               value={form.startDate}
               onChange={(e) => handleChange("startDate", e.target.value)}
+              className="w-full p-2 rounded-lg bg-[#1f1f23] border border-[#333] text-zinc-100 text-center placeholder-zinc-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1 text-zinc-300 text-right">
+              تاریخ پایان سرویس
+            </label>
+            <input
+              type="text"
+              placeholder="1403-07-10"
+              value={form.endDate}
+              onChange={(e) => handleChange("endDate", e.target.value)}
               className="w-full p-2 rounded-lg bg-[#1f1f23] border border-[#333] text-zinc-100 text-center placeholder-zinc-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             />
           </div>
@@ -106,7 +121,10 @@ function App() {
             placeholder="Enter price"
             value={form.price}
             onChange={(e) =>
-              handleChange("price", e.target.value ? Number(e.target.value) : "")
+              handleChange(
+                "price",
+                e.target.value ? Number(e.target.value) : ""
+              )
             }
             className="w-full p-2 rounded-lg bg-[#1f1f23] border border-[#333] text-zinc-100 placeholder-zinc-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
           />
@@ -140,16 +158,42 @@ function App() {
               <label className="block text-sm mb-1 text-zinc-300 text-right">
                 اختلاف روزها
               </label>
-              <div className="p-2 rounded-lg bg-[#1f1f23] border border-[#333] text-center">
-                {days+1}
+              <div className="relative">
+                <div
+                  className="p-2 rounded-lg bg-[#1f1f23] border border-[#333] text-center"
+                  onClick={() => {
+                    navigator.clipboard.writeText(days);
+                    setTooltip("diffdays");
+                  }}
+                >
+                  {days}
+                </div>
+                {tooltip === "diffdays" && (
+                  <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1 bg-gray-900 text-white text-xs rounded-md">
+                    کپی شد! 
+                  </span>
+                )}
               </div>
             </div>
             <div>
               <label className="block text-sm mb-1 text-zinc-300 text-right">
                 اعتبار به مشتری
               </label>
-              <div className="p-2 rounded-lg bg-[#1f1f23] border border-[#333] text-center">
-                {Math.round(result)}
+              <div className="relative">
+                <div
+                  className="p-2 rounded-lg bg-[#1f1f23] border border-[#333] text-center"
+                  onClick={() => {
+                    navigator.clipboard.writeText(result);
+                    setTooltip("pricetopay");
+                  }}
+                >
+                  {result?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                </div>
+                {tooltip === "pricetopay" && (
+                  <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1 bg-gray-900 text-white text-xs rounded-md">
+                    کپی شد!
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -160,8 +204,21 @@ function App() {
             <label className="block text-sm mb-1 text-zinc-300 text-right">
               کد تخفیف
             </label>
-            <div className="p-2 rounded-lg bg-[#1f1f23] border border-[#333] text-center">
-              {formattedCode}
+            <div className="relative">
+              <div
+                className="p-2 rounded-lg bg-[#1f1f23] border border-[#333] text-center "
+                onClick={() => {
+                  navigator.clipboard.writeText(formattedCode);
+                  setTooltip("code");
+                }}
+              >
+                {formattedCode}
+              </div>
+              {tooltip === "code" && (
+                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1 bg-gray-900 text-white text-xs rounded-md">
+                  کپی شد! 
+                </span>
+              )}
             </div>
           </div>
         )}
