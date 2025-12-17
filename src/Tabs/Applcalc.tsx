@@ -136,7 +136,7 @@ function Applcalc() {
     setResult(rounded);
   };
 
-  const formattedCode = form.code ? `${form.code.replace("OR0000", "LM")}` : "";
+  const formattedCode = form.code ? `${form.code.replace("OR0000", "LM")+(Math.random() + 1).toString(36).substring(7)}` : "";
 
   //tooltip
   useEffect(() => {
