@@ -108,6 +108,7 @@ function Applcalc() {
   const [days, setDays] = useState<number | null>(null);
   const [tooltip, setTooltip] = useState<String | null>(null);
   const [result, setResult] = useState<number | null>(null);
+  const [randchar, setRandchar] = useState<string | null>(null);
   const subTime = 60;
   // Load cached data
   useEffect(() => {
@@ -126,7 +127,7 @@ function Applcalc() {
 
   const handleCalculate = () => {
     if (!form.startDate || !form.endDate || !form.price) return;
-
+    setRandchar((Math.random() + 1).toString(36).substring(7))
     const start = moment(form.startDate, "jYYYY-jMM-jDD");
     const end = moment(form.endDate, "jYYYY-jMM-jDD");
     const diffDays = subTime - (end.diff(start, "days") + 1);
@@ -136,7 +137,7 @@ function Applcalc() {
     setResult(rounded);
   };
 
-  const formattedCode = form.code ? `${form.code.replace("OR0000", "LM")+(Math.random() + 1).toString(36).substring(7)}` : "";
+  const formattedCode = form.code ? `${form.code.replace("OR0000  ", "LM")+ randchar}` : "";
 
   //tooltip
   useEffect(() => {
