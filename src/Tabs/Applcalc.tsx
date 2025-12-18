@@ -136,8 +136,8 @@ function Applcalc() {
     const rounded = Math.ceil(res / 1000) * 1000;
     setResult(rounded);
   };
-
-  const formattedCode = form.code ? `${form.code.replace("OR0000  ", "LM")+ randchar}` : "";
+  
+  const formattedCode = form.code ? `${form.code.replace("OR000", "LM")+ randchar}` : "";
 
   //tooltip
   useEffect(() => {
